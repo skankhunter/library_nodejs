@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const formData = require("express-form-data");
+const bodyParser = require("body-parser");
 const router = express.Router();
 
 const loggerMiddleware = require("./middleware/logger");
@@ -12,7 +12,7 @@ const { API } = require("./constants");
 
 const app = express();
 
-app.use(formData.parse());
+app.use(bodyParser.json());
 app.use(cors());
 app.use(loggerMiddleware);
 

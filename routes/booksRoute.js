@@ -1,4 +1,5 @@
 const { Router } = require("express");
+const path = require("path");
 const { Book } = require("../models");
 const fileMiddleware = require("../middleware/file");
 
@@ -34,8 +35,10 @@ router.get(`/:id/download`, (req, res) => {
    const { books } = store;
    const { id } = req.params;
    const book = books.find((book) => book.id === id);
+   const pathToFile = path.join(__dirname, `../${book.fileBook}`);
+   console.log(pathToFile);
 
-   res.download(__dirname + book.fileBook, book.fileName, (err) => {
+   res.download(pathToFile, book.fileName, (err) => {
       if (err) {
          res.status(404).json();
       }
