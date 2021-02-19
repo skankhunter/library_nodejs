@@ -36,7 +36,6 @@ router.get(`/:id/download`, (req, res) => {
    const { id } = req.params;
    const book = books.find((book) => book.id === id);
    const pathToFile = path.join(__dirname, `../${book.fileBook}`);
-   console.log(pathToFile);
 
    res.download(pathToFile, book.fileName, (err) => {
       if (err) {
@@ -64,8 +63,8 @@ router.put(`/:id`, (req, res) => {
    const { books } = store;
    const { title, description } = req.body;
    const { id } = req.params;
-   const bookIndex = books.findIndex((book) => book.id === id);
-
+   const bookIndex = books.findIndex((book) => book.id == id);
+   
    if (bookIndex !== -1) {
       books[bookIndex] = {
          ...books[bookIndex],
@@ -81,7 +80,7 @@ router.put(`/:id`, (req, res) => {
 router.delete(`/:id`, (req, res) => {
    const { books } = store;
    const { id } = req.params;
-   const bookIndex = books.findIndex((book) => book.id === id);
+   const bookIndex = books.findIndex((book) => book.id == id);
 
    if (bookIndex !== -1) {
       books.splice(bookIndex, 1);

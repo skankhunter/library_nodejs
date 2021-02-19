@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const router = express.Router();
 
 const loggerMiddleware = require("./middleware/logger");
 const errorMiddleware = require("./middleware/routeError");
