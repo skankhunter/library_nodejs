@@ -16,7 +16,11 @@ const store = {
 
 router.get(`/`, (req, res) => {
    const { books } = store;
-   res.json(books);
+   res.render("books/index", { books, title: "Books list" });
+});
+
+router.get(`/create`, (req, res) => {
+   res.render("books/create", { book: {}, title: "Creation" });
 });
 
 router.get(`/:id`, (req, res) => {
@@ -24,11 +28,9 @@ router.get(`/:id`, (req, res) => {
    const { id } = req.params;
    const book = books.find((book) => book.id === id);
 
-   if (book) {
-      res.json(book);
-   } else {
-      res.status(404).json("Not found");
-   }
+   return book
+      ? res.render("books/view", { book, title: "Просмотр книги" })
+      : res.redirect("/404");
 });
 
 router.get(`/:id/download`, (req, res) => {
@@ -39,54 +41,103 @@ router.get(`/:id/download`, (req, res) => {
 
    res.download(pathToFile, book.fileName, (err) => {
       if (err) {
-         res.status(404).json();
+         res.status(404).redirect(`/404`);
       }
    });
 });
 
-router.post(`/`, fileMiddleware.single("book-pdf"), (req, res) => {
-   const { books } = store;
-   const { title, description } = req.body;
+router.post(
+   `/create`,
+   fileMiddleware.fields([
+      { name: "image-cover", maxCount: 1 },
+      { name: "book-pdf", maxCount: 1 },
+   ]),
+   (req, res) => {
+      const { books } = store;
+      const { title, description, authors } = req.body;
 
-   if (req.file) {
-      const { filename, path } = req.file;
+      if (req.files) {
+         const imgCover =
+            req.files["image-cover"] && req.files["image-cover"][0];
+         const bookPdf = req.files["book-pdf"] && req.files["book-pdf"][0];
 
-      const newBook = new Book(title, description, "", "", "", filename, path);
-      books.push(newBook);
-      res.status(201).json(newBook);
-   } else {
-      res.status(404).json();
+         const newBook = new Book(
+            title,
+            description,
+            authors,
+            "",
+            imgCover && imgCover.path,
+            bookPdf && bookPdf.filename,
+            bookPdf && bookPdf.path
+         );
+
+         books.push(newBook);
+         res.redirect("/books");
+      } else {
+         res.redirect(`/error/404`);
+      }
    }
-});
+);
 
-router.put(`/:id`, (req, res) => {
+router.get("/update/:id", (req, res) => {
    const { books } = store;
-   const { title, description } = req.body;
    const { id } = req.params;
    const bookIndex = books.findIndex((book) => book.id == id);
-   
+
    if (bookIndex !== -1) {
-      books[bookIndex] = {
-         ...books[bookIndex],
-         title,
-         description,
-      };
-      res.json(books[bookIndex]);
+      res.render("books/update", {
+         title: "Book | view",
+         book: books[bookIndex],
+      });
    } else {
-      res.status(404).json("Not found");
+      res.redirect("/404");
    }
 });
 
-router.delete(`/:id`, (req, res) => {
+router.post(
+   `/update/:id`,
+   fileMiddleware.fields([
+      { name: "image-cover", maxCount: 1 },
+      { name: "book-pdf", maxCount: 1 },
+   ]),
+   (req, res) => {
+      const { books } = store;
+      const { title, description, authors } = req.body;
+      const { id } = req.params;
+      const bookIndex = books.findIndex((book) => book.id == id);
+
+      if (bookIndex !== -1 && req.files) {
+         const imgCover = req.files["image-cover"] && req.files["image-cover"][0];
+         const bookPdf = req.files["book-pdf"] && req.files["book-pdf"][0];
+
+         books[bookIndex] = {
+            ...books[bookIndex],
+            title,
+            description,
+            authors,
+            fileCover: imgCover && imgCover.path,
+            fileName: bookPdf && bookPdf.filename,
+            fileBook: bookPdf && bookPdf.path,
+         };
+
+         res.redirect(`/books/${id}`);
+
+      } else {
+         res.redirect(`/error/404`);
+      }
+   }
+);
+
+router.post(`/delete/:id`, (req, res) => {
    const { books } = store;
    const { id } = req.params;
    const bookIndex = books.findIndex((book) => book.id == id);
 
    if (bookIndex !== -1) {
       books.splice(bookIndex, 1);
-      res.json("ok");
+      res.redirect(`/books`);
    } else {
-      res.status(404).json("todo | not found");
+      res.redirect(`/404`);
    }
 });
 

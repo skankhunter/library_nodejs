@@ -6,19 +6,25 @@ const loggerMiddleware = require("./middleware/logger");
 const errorMiddleware = require("./middleware/routeError");
 const booksRouter = require("./routes/booksRoute");
 const authRouter = require("./routes/authRoute");
+const mainRouter = require("./routes/mainRouter");
 
 const { API } = require("./constants");
 
 const app = express();
 
+app.set("view engine", "ejs");
+
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(cors());
+
 app.use(loggerMiddleware);
 
-app.use('/public', express.static(__dirname+"/public"));
+app.use("/public", express.static(__dirname + "/public"));
 
 app.use(`${API}/user`, authRouter);
-app.use(`${API}/books`, booksRouter);
+app.use(`/`, mainRouter);
+app.use(`/books`, booksRouter);
 
 app.use(errorMiddleware);
 
