@@ -7,3 +7,5 @@ npm-debug.*
 Thumbs.db
 build/
 
+server.log
+public/

@@ -1,4 +1,4 @@
-<form method="POST"  class="mt-5">
+<form method="POST" enctype="multipart/form-data"  class="mt-5">
     <div class="form-group">
         <label for="inputTitle">Заголовок</label>
         <input type="text"
@@ -27,14 +27,27 @@
         ><%= book.authors %></textarea>
     </div>
     
-    <!-- <div class="form-group">
+    <div class="form-group">
+        <img src="/<%= book.fileCover %>" class="img-fluid" alt="cover"/>
+        <label for="inputImage">Обложка</label>
+        <input  
+            type="file"
+            rows="3"
+            name="image-cover"
+            class="form-control"
+            id="inputImage"/>
+    </div>
+
+    <div class="form-group">
+        <p>fileName: <%= book.fileName %></p>
         <label for="inputFile">File</label>
-        <input  type="file"
-                rows="3"
-                name="file"
-                class="form-control"
-                id="inputFile"/>
-    </div> -->
+        <input 
+            type="file"
+            rows="3"
+            name="book-pdf"
+            class="form-control"
+            id="inputFile"/>
+    </div>
 
     <div class="form-group text-right ">
         <button type="submit" class="btn btn-primary">Сохранить</button>

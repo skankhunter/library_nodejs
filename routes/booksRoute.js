@@ -46,32 +46,38 @@ router.get(`/:id/download`, (req, res) => {
    });
 });
 
-router.post(`/create`, fileMiddleware.single("book-pdf"), (req, res) => {
-   const { books } = store;
-   const { title, description, authors } = req.body;
+router.post(
+   `/create`,
+   fileMiddleware.fields([
+      { name: "image-cover", maxCount: 1 },
+      { name: "book-pdf", maxCount: 1 },
+   ]),
+   (req, res) => {
+      const { books } = store;
+      const { title, description, authors } = req.body;
 
-   const newBook = new Book(
-      title,
-      description,
-      authors,
-      "",
-      "",
-      "filename",
-      path
-   );
-   books.push(newBook);
-   res.redirect("/books");
+      if (req.files) {
+         const imgCover =
+            req.files["image-cover"] && req.files["image-cover"][0];
+         const bookPdf = req.files["book-pdf"] && req.files["book-pdf"][0];
 
-   // if (req.file) {
-   //    const { filename, path } = req.file;
+         const newBook = new Book(
+            title,
+            description,
+            authors,
+            "",
+            imgCover && imgCover.path,
+            bookPdf && bookPdf.filename,
+            bookPdf && bookPdf.path
+         );
 
-   //    const newBook = new Book(title, description, "", "", "", filename, path);
-   //    books.push(newBook);
-   //    res.status(201).redirect("books/index", { books });
-   // } else {
-   //    res.status(404).redirect(`/error/404`);
-   // }
-});
+         books.push(newBook);
+         res.redirect("/books");
+      } else {
+         res.redirect(`/error/404`);
+      }
+   }
+);
 
 router.get("/update/:id", (req, res) => {
    const { books } = store;
@@ -84,28 +90,43 @@ router.get("/update/:id", (req, res) => {
          book: books[bookIndex],
       });
    } else {
-      res.status(404).redirect("/404");
+      res.redirect("/404");
    }
 });
 
-router.post(`/update/:id`, (req, res) => {
-   const { books } = store;
-   const { title, description, authors } = req.body;
-   const { id } = req.params;
-   const bookIndex = books.findIndex((book) => book.id == id);
+router.post(
+   `/update/:id`,
+   fileMiddleware.fields([
+      { name: "image-cover", maxCount: 1 },
+      { name: "book-pdf", maxCount: 1 },
+   ]),
+   (req, res) => {
+      const { books } = store;
+      const { title, description, authors } = req.body;
+      const { id } = req.params;
+      const bookIndex = books.findIndex((book) => book.id == id);
 
-   if (bookIndex !== -1) {
-      books[bookIndex] = {
-         ...books[bookIndex],
-         title,
-         description,
-         authors,
-      };
-      res.redirect(`/books/${id}`);
-   } else {
-      res.status(404).redirect(`/404`);
+      if (bookIndex !== -1 && req.files) {
+         const imgCover = req.files["image-cover"] && req.files["image-cover"][0];
+         const bookPdf = req.files["book-pdf"] && req.files["book-pdf"][0];
+
+         books[bookIndex] = {
+            ...books[bookIndex],
+            title,
+            description,
+            authors,
+            fileCover: imgCover && imgCover.path,
+            fileName: bookPdf && bookPdf.filename,
+            fileBook: bookPdf && bookPdf.path,
+         };
+
+         res.redirect(`/books/${id}`);
+
+      } else {
+         res.redirect(`/error/404`);
+      }
    }
-});
+);
 
 router.post(`/delete/:id`, (req, res) => {
    const { books } = store;
@@ -116,7 +137,7 @@ router.post(`/delete/:id`, (req, res) => {
       books.splice(bookIndex, 1);
       res.redirect(`/books`);
    } else {
-      res.status(404).redirect(`/404`);
+      res.redirect(`/404`);
    }
 });
 
