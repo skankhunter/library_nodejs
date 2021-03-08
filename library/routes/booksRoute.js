@@ -1,5 +1,6 @@
 const { Router } = require("express");
 const path = require("path");
+const fetch = require("node-fetch");
 const { Book } = require("../models");
 const fileMiddleware = require("../middleware/file");
 
@@ -7,6 +8,18 @@ const router = Router();
 
 const store = {
    books: [],
+};
+
+const getViews = async (id) => {
+   return await fetch(`http://counter:3000/counter/${id}`).then((data) =>
+      data.json()
+   );
+};
+
+const incrViews = async (id) => {
+   await fetch(`http://counter:3000/counter/${id}/incr`, {
+      method: "POST",
+   });
 };
 
 [1, 2, 3].map((el) => {
@@ -23,14 +36,26 @@ router.get(`/create`, (req, res) => {
    res.render("books/create", { book: {}, title: "Creation" });
 });
 
-router.get(`/:id`, (req, res) => {
+router.get(`/:id`, async (req, res) => {
    const { books } = store;
    const { id } = req.params;
    const book = books.find((book) => book.id === id);
 
-   return book
-      ? res.render("books/view", { book, title: "Просмотр книги" })
-      : res.redirect("/404");
+   if (book) {
+      try {
+         const bookCounter = await getViews(id);
+         await incrViews(id);
+
+         return res.render("books/view", {
+            book: { ...book, views: bookCounter },
+            title: "Просмотр книги",
+         });
+      } catch {
+         return res.status(500).json("Ошибка сервиса счетчика");
+      }
+   } else {
+      return res.redirect("/404");
+   }
 });
 
 router.get(`/:id/download`, (req, res) => {
@@ -41,7 +66,7 @@ router.get(`/:id/download`, (req, res) => {
 
    res.download(pathToFile, book.fileName, (err) => {
       if (err) {
-         res.status(404).redirect(`/404`);
+         res.redirect(`/404`);
       }
    });
 });
@@ -107,7 +132,8 @@ router.post(
       const bookIndex = books.findIndex((book) => book.id == id);
 
       if (bookIndex !== -1 && req.files) {
-         const imgCover = req.files["image-cover"] && req.files["image-cover"][0];
+         const imgCover =
+            req.files["image-cover"] && req.files["image-cover"][0];
          const bookPdf = req.files["book-pdf"] && req.files["book-pdf"][0];
 
          books[bookIndex] = {
@@ -121,7 +147,6 @@ router.post(
          };
 
          res.redirect(`/books/${id}`);
-
       } else {
          res.redirect(`/error/404`);
       }

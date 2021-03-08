@@ -1,0 +1,10 @@
+.DS_Store
+.idea
+
+node_modules/
+npm-debug.*
+
+Thumbs.db
+build/
+
+/server.log

@@ -10,6 +10,7 @@
                 <h5 class="card-title"><%= book.title %></h5>
                 <p class="card-text"><%= book.description %></p>
                 <p class="card-text"><%= book.authors %></p>
+                <p class="card-text">Просмотров: <%= book.views ? book.views : 0 %></p>
 
                 <div class="text-right">
                     <a class="btn btn-sm btn-primary" href="/books/update/<%= book.id %>">

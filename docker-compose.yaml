@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  library:
+    build: ./library/
+    restart: always
+    ports:
+      - "3000:3000"
+  counter:
+    build: ./counter/
+    restart: always
+    expose:
+      - "3000"
+    volumes:
+      - ./counter/db.json:/counter/db.json
+    depends_on:
+      - library
