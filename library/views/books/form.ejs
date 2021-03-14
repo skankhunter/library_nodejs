@@ -28,12 +28,15 @@
     </div>
     
     <div class="form-group">
-        <img src="/<%= book.fileCover %>" class="img-fluid" alt="cover"/>
+        <img 
+            src="data:image/<%=book.fileCover.contentType%>;base64,<%=book.fileCover.data.toString('base64')%>"
+            lass="img-fluid" 
+            alt="cover"/>
         <label for="inputImage">Обложка</label>
         <input  
             type="file"
             rows="3"
-            name="image-cover"
+            name="imgFiles"
             class="form-control"
             id="inputImage"/>
     </div>
@@ -44,7 +47,7 @@
         <input 
             type="file"
             rows="3"
-            name="book-pdf"
+            name="booksFiles"
             class="form-control"
             id="inputFile"/>
     </div>

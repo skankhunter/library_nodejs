@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 
 const loggerMiddleware = require("./middleware/logger");
 const errorMiddleware = require("./middleware/routeError");
@@ -29,7 +30,18 @@ app.use(`/books`, booksRouter);
 app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 3000;
+const UrlDb = process.env.DB_HOST;
 
-app.listen(PORT, () => {
-   console.log(`Server is running on port ${PORT}`);
-});
+async function start() {
+   try {
+      await mongoose.connect(UrlDb, { useNewUrlParser: true, useUnifiedTopology: true });
+
+      app.listen(PORT, () => {
+         console.log(`Server is running on port ${PORT}`);
+      });
+   } catch (e) {
+      console.log(e);
+   }
+}
+
+start();

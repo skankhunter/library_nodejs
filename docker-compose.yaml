@@ -5,6 +5,10 @@ services:
     restart: always
     ports:
       - "3000:3000"
+    environment:
+      - PORT=3000
+    env_file:
+      - .env
   counter:
     build: ./counter/
     restart: always
